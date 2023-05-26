@@ -1,6 +1,7 @@
 
-# Llamamos a las librerias que usaremos
-#------------------------------------------
+# Cargamos las librerias a usar
+# =============================
+
 library(dplyr)
 library(tidyr)
 library(stringr)
@@ -9,32 +10,26 @@ library(readxl)
 library(data.table)
 
 
-# Directorio donde se encuentra las bases con los link a importar
-setwd("C:/XXXXXX")
+# Directorio de nuestra base
+# ==========================
 
+setwd("C:/Users/XXXX/Desktop/web_scrap")
 
-# Directorio donde exportaremos los archivos generados por el codigo
-a <- "C:/Users/JOSE/Desktop/Fran_OSIPTEL/data_scrap"
+names <- data.frame(list.files(pattern="*.xlsx"))
+
+# La direccion donde lo archivos que genere el codigo web scrapping seran guardados
+a <- "C:/Users/XXXX/Desktop/web_scrap/data_scrap"
 
 # --------------------------------
-
-b <- sub(".xlsx", ".csv", string)
-file.path(a,b)
-
-
-
-# Corremos el for:
-#------------------------
-
+                                                                                           
 for (x in 1:nrow(names)){
 
+  sirt <- NULL
   
   base_1 <- read_excel(paste0(names[x,]))
   string <- paste0(names[x,])
   
   base_1 <- base_1 %>% select("DETALLE FICHA INFORMATIVA")
-  
-  sirt <- NULL
   
   for(i in 1:nrow(base_1)) {
     
@@ -81,8 +76,7 @@ for (x in 1:nrow(names)){
       # Tarifa On net
       tarif_on_net <- pagina_2 %>%
         html_nodes("#lblDSaldOnMov") %>% html_text()
-      
-      
+     
       # Tarifa Off net
       tarif_off_net <- pagina_2 %>%
         html_nodes("#lblDSaldOffMov") %>% html_text()
@@ -98,7 +92,6 @@ for (x in 1:nrow(names)){
       # Minutos todo destino
       min_todo_dest <- pagina_2 %>%
         html_nodes("#lblTMMINTODODEST") %>% html_text()
-      
       
       #------------------------------------------
       # Servicio 7: "Telefonia fija"
@@ -168,7 +161,6 @@ for (x in 1:nrow(names)){
       tecn_vel_max <- pagina_2 %>%
         html_nodes("#lblTecVelMax") %>% html_text()
       
-      
       sirt <- rbind(sirt, c(base_1[i,],
                             "Nombre de la empresa" = name_empresa,
                             "Nombre del plan" = name_plan,
@@ -201,18 +193,29 @@ for (x in 1:nrow(names)){
                             "velocidad minima garantizada" = vel_dec_min_garanti,
                             "cantidad datos trans" = cant_datos_trans,
                             "teconologia velocidad maxima" = tecn_vel_max))
-    }    
+      
+      # Nos permite ver el proceso
+      print(paste(i, "de", nrow(base_1)))
+      
+      }    
 
   df_sirt <- data.frame(sirt)
   
-  #Estos 2 prints (numeros) tienen q ser iguales, de esa forma 
-  # nos aseguramos que todos los links han sido leidos por el codigo
+  #Los siguientes dos "print" tienen que ser iguales, de esa forma 
+  # nos aseguramos que todos los links han sido leidos
   
   print(nrow(base_1))
   print(nrow(df_sirt))
+ 
+  #Exportamos en formato .CSV
+  b <- sub(".xlsx", ".csv", string)
+  file.path(a,b)
   
-  
-  # Esto exporta los archivos a formato ".csv"
   fwrite(df_sirt, file = file.path(a,b))
 
 }  
+
+
+# FIN ......................:D
+
+
