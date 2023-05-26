@@ -1,9 +1,6 @@
-/* 
-Comparto mi sintaxis para extraer informacion del sistema de consultas tarifarias (SIRT) del OSIPTEL,
-de esta formas se puede extraer información de este portal sin necesidad de hacerlo manualmente
-*/
 
-
+# Comparto mi sintaxis para extraer informacion del sistema de consultas tarifarias (SIRT) del OSIPTEL,
+# mediante la tecnica de web scrapping, de esta manera se automatiza el proceso
 
 # Cargamos las librerias a usar
 # =============================
