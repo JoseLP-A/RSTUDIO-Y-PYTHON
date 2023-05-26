@@ -1,80 +1,39 @@
 
+# Comparto mi codigo para extraer información del "Speedtest Global Index" publicado por Ookla, 
+# usando web scrapping para automatizar el proceso  
+
+# Speedtest Global Index: https://www.speedtest.net/global-index
+
+
+# Imporatmos las librerias a usar
+#--------------------------------
 
 library(dplyr)
 library(rvest)
+library(foreign)
 
 
+# Url de la pagina
 url <- "https://www.speedtest.net/global-index"
-
 pagina <- read_html(url)
 
-
-
+# Extraemos los link de paises
 links <- html_attr(html_nodes(pagina, "a"), "href")
 
-
+# Lo guardamos en un dataframe 
 df=as.data.frame(as.character(links))
-df
 
-
-
-links_global <- df  %>% 
-  filter(!grepl("?city", as.character(links)) & grepl("/global-index/", as.character(links)) & grepl("fixed", as.character(links)))
+# Nos quedamos con los paises y el servicio fijo y movil.
 
 links_fijo <- df  %>% 
   filter(!grepl("?city", as.character(links)) & grepl("/global-index/", as.character(links)) & grepl("fixed", as.character(links)))
-
 
 links_mobile <- df  %>% 
   filter(!grepl("?city", as.character(links)) & grepl("/global-index/", as.character(links)) & grepl("mobile", as.character(links)))
 
 
-#----------------------
-## Mobil
-#----------------------
-
-#Ranking
-pagina_2 %>% 
-  html_nodes("#column-mobileMedian .rank .number") %>%  html_text
-
-# descarga
-pagina_2 %>% 
-  html_nodes("#column-mobileMedian .download .number") %>%  html_text
-
-
-# upload 
-
-pagina_2 %>% 
-  html_nodes("#column-mobileMedian .upload .number") %>%  html_text
-
-
-# latencia 
-pagina_2 %>% 
-  html_nodes("#column-mobileMedian .latency .number") %>%  html_text
-
-
-##  Fijo
-#----------------------
-
-#Ranking
-pagina_2 %>% 
-  html_nodes("#column-fixedMedian .rank .number") %>%  html_text
-
-# descarga
-pagina_2 %>% 
-  html_nodes("#column-fixedMedian .download .number") %>%  html_text
-
-
-# upload 
-
-pagina_2 %>% 
-  html_nodes("#column-fixedMedian .upload .number") %>%  html_text
-
-
-# latencia 
-pagina_2 %>% 
-  html_nodes("#column-fixedMedian .latency .number") %>%  html_text
-
+# Extraemos los datos que necesitamos
+# =====================================
 
 
 #----------------------
@@ -96,24 +55,21 @@ for(i in 1:nrow(links_mobile)) {
   # Subida 
   mobil_subida <- pagina_2 %>% 
     html_nodes("#column-mobileMedian .upload .number") %>%  html_text
-  
-  
+ 
   # latencia 
   mobil_latencia <- pagina_2 %>% 
     html_nodes("#column-mobileMedian .latency .number") %>%  html_text
   
   int_mobil <- rbind(int_mobil, c(links_mobile[i,], mobil_descarga, mobil_subida, mobil_latencia))
+  
 }
 
 df_int_mobil <- data.frame(int_mobil)
 
-library(foreign)
-write.dta(df_int_mobil,"C:/Users/jleiva/Desktop/bases/df_int_mobil.dta")
 
 #----------------------
 # INTERNET FIJO
 #----------------------
-
 
 int_fijo  <- NULL
 
@@ -145,27 +101,17 @@ for(i in 1:nrow(links_fijo)) {
 df_int_fijo <- data.frame(int_fijo)
 
 
-# RENAME NOMBRES 
-df_int_fijo <- rename(df_int_fijo, Link=X1,
-       ranking=X2,
-       descarga=X3,
-       subida=X4,
-       latencia=X5)
+# Guardamos las bases
+save(internet_ookla_2 , file = "internet_ookla.RData")
+saveRDS(internet_ookla_2, "internet_ookla.rds")
 
+# Exportamos a formato DTA
 
-#SPLIT STRING
-library(stringr)
-df_int_fijo2 <- cbind(df_int_fijo, str_split_fixed(df_int_fijo$Link, "/",3))
-
-df_int_fijo2 <- cbind(df_int_fijo2, str_split_fixed(df_int_fijo2$"3","#",3))
-
-df_int_fijo2 <- subset(df_int_fijo2, select = -c(1, 2,3, 2,3))
-
-
+write.dta(df_int_mobil,"C:/Users/jleiva/Desktop/bases/df_int_mobil.dta")
 write.dta(df_int_fijo,"C:/Users/jleiva/Desktop/bases/df_int_fijo.dta")
 
 
+#*************************** FIN :D
 
-save(internet_ookla_2 , file = "internet_ookla.RData")
 
-saveRDS(internet_ookla_2, "internet_ookla.rds")
+
